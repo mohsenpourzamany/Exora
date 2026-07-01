@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   IconLayoutDashboard,
   IconSettings2,
@@ -29,6 +29,7 @@ interface SidebarProps {
 
 export default function Sidebar({ collapsed }: SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate()
   const [openMenus, setOpenMenus] = useState<string[]>([]);
 
   const toggleMenu = (id: string) => {
@@ -88,7 +89,10 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                 <>
                   <button
                     type="button"
-                    onClick={() => toggleMenu(item.id)}
+                    onClick={() => {
+                      toggleMenu(item.id)
+                      navigate(item.path)
+                    }}
                     className={`
                       w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm
                       transition-colors duration-150
