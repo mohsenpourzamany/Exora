@@ -14,6 +14,13 @@ import AccountTransfer from "./pages/transactions/account-transfer";
 import Hawala from "./pages/transactions/hawala";
 import CustomerReports from "./pages/reports/customers";
 import IncomeReport from "./pages/reports/income";
+import AccountsReport from "./pages/reports/accounts";
+import OrdersReport from "./pages/reports/orders";
+import TransactionsReport from "./pages/reports/transactions";
+import BranchesManagement from "./pages/management/branches";
+import AccountsManagement from "./pages/management/accounts";
+import CustomersManagement from "./pages/management/customers";
+import UsersManagement from "./pages/management/users";
 
 export default function App() {
   return (
@@ -22,10 +29,10 @@ export default function App() {
         <Route element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path="management" element={<Management />} />
-          <Route path="management/branches" element={<Placeholder title="مدیریت شعب" />} />
-          <Route path="management/accounts" element={<Placeholder title="مدیریت حساب‌ها" />} />
-          <Route path="management/customers" element={<Placeholder title="مدیریت مشتریان" />} />
-          <Route path="management/users" element={<Placeholder title="مدیریت کاربران" />} />
+          <Route path="management/branches" element={<BranchesManagement />} />
+          <Route path="management/accounts" element={<AccountsManagement />} />
+          <Route path="management/customers" element={<CustomersManagement />} />
+          <Route path="management/users" element={<UsersManagement />} />
           <Route path="transactions" element={<Transactions />} />
           <Route path="transactions/income-expense" element={<IncomeExpense />} />
           <Route path="transactions/cash-bank" element={<CashBank key="cash" />} />
@@ -35,9 +42,9 @@ export default function App() {
           <Route path="reports" element={<Reports />} />
           <Route path="reports/customers" element={<CustomerReports />} />
           <Route path="reports/income" element={<IncomeReport />} />
-          <Route path="reports/accounts" element={<Placeholder title="گزارش حساب‌ها" />} />
-          <Route path="reports/orders" element={<Placeholder title="گزارش‌های سفارشی" />} />
-          <Route path="reports/transactions" element={<Placeholder title="گزارش تراکنش‌ها" />} />
+          <Route path="reports/accounts" element={<AccountsReport />} />
+          <Route path="reports/orders" element={<OrdersReport />} />
+          <Route path="reports/transactions" element={<TransactionsReport />} />
           <Route path="exchange" element={<Exchange />} />
           <Route path="exchange/rates" element={<Placeholder title="لیست اسعار" />} />
           <Route path="exchange/daily" element={<Placeholder title="نرخ‌های روزانه" />} />
