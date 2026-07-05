@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
-import Placeholder from "./components/ui/Placeholder";
 import Dashboard from "./pages/dashboard";
 import Transactions from "./pages/transactions";
 import IncomeExpense from "./pages/transactions/income-expense";
@@ -12,6 +11,7 @@ import Settings from "./pages/settings";
 import Backup from "./pages/backup";
 import AccountTransfer from "./pages/transactions/account-transfer";
 import Hawala from "./pages/transactions/hawala";
+import CurrencyExchange from "./pages/transactions/currency-exchange";
 import CustomerReports from "./pages/reports/customers";
 import IncomeReport from "./pages/reports/income";
 import AccountsReport from "./pages/reports/accounts";
@@ -39,6 +39,7 @@ export default function App() {
           <Route path="transactions/misc" element={<CashBank key="misc" />} />
           <Route path="transactions/account-transfer" element={<AccountTransfer />} />
           <Route path="transactions/hawala" element={<Hawala />} />
+          <Route path="transactions/currency-exchange" element={<CurrencyExchange />} />
           <Route path="reports" element={<Reports />} />
           <Route path="reports/customers" element={<CustomerReports />} />
           <Route path="reports/income" element={<IncomeReport />} />
@@ -46,10 +47,10 @@ export default function App() {
           <Route path="reports/orders" element={<OrdersReport />} />
           <Route path="reports/transactions" element={<TransactionsReport />} />
           <Route path="exchange" element={<Exchange />} />
-          <Route path="exchange/rates" element={<Placeholder title="لیست اسعار" />} />
-          <Route path="exchange/daily" element={<Placeholder title="نرخ‌های روزانه" />} />
-          <Route path="exchange/history" element={<Placeholder title="تاریخچه تغییرات" />} />
-          <Route path="exchange/manage" element={<Placeholder title="مدیریت اسعار" />} />
+          <Route path="exchange/rates" element={<Exchange />} />
+          <Route path="exchange/daily" element={<Exchange />} />
+          <Route path="exchange/history" element={<Exchange />} />
+          <Route path="exchange/manage" element={<Exchange />} />
           <Route path="settings" element={<Settings />} />
           <Route path="settings/general" element={<Settings />} />
           <Route path="settings/users" element={<Settings />} />
@@ -57,6 +58,9 @@ export default function App() {
           <Route path="settings/system" element={<Settings />} />
           <Route path="settings/financial" element={<Settings />} />
           <Route path="settings/security" element={<Settings />} />
+          <Route path="settings/alerts" element={<Settings />} />
+          <Route path="settings/backup" element={<Settings />} />
+          <Route path="settings/lang" element={<Settings />} />
           <Route path="backup" element={<Backup />} />
         </Route>
       </Routes>

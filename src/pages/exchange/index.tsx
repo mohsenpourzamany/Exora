@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   LineChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid,
@@ -8,8 +9,13 @@ import {
   IconRefresh, IconEdit, IconPlus,
   IconCircleCheck, IconCircleX,
   IconTrendingUp, IconTrendingDown,
+  IconLock, IconHistory, IconClipboardList,
 } from '@tabler/icons-react'
-import { currencies, chartData7Day, topGainers, topLosers, currencyStats } from './mockData'
+import { useAuth } from '../../context/AuthContext'
+import {
+  currencies, chartData7Day, topGainers, topLosers, currencyStats,
+  dailyRateSnapshots, rateHistory,
+} from './mockData'
 
 // Mini sparkline component
 const Sparkline = ({ data, positive }: { data: number[], positive: boolean }) => {
@@ -57,9 +63,36 @@ const CHART_COLORS: Record<string, string> = {
   USD: '#2563EB', EUR: '#7C3AED', AED: '#059669', TRY: '#DC2626',
 }
 
+const TABS = [
+  { id: 'rates', label: 'لیست اسعار', path: '/exchange/rates' },
+  { id: 'daily', label: 'نرخ‌های روزانه', path: '/exchange/daily' },
+  { id: 'history', label: 'تاریخچه تغییرات', path: '/exchange/history' },
+  { id: 'manage', label: 'مدیریت اسعار', path: '/exchange/manage' },
+]
+
+function tabFromPath(pathname: string): string {
+  const segment = pathname.split('/exchange/')[1]
+  if (!segment) return 'rates' // bare "/exchange"
+  const id = segment.split('/')[0]
+  return TABS.some(t => t.id === id) ? id : 'rates'
+}
+
 export default function Exchange() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { hasPermission } = useAuth()
+  const [activeTab, setActiveTab] = useState(() => tabFromPath(location.pathname))
   const [activeLines, setActiveLines] = useState(['USD', 'EUR', 'AED', 'TRY'])
   const [editingRate, setEditingRate] = useState<number | null>(null)
+
+  useEffect(() => {
+    setActiveTab(tabFromPath(location.pathname))
+  }, [location.pathname])
+
+  const selectTab = (id: string) => {
+    setActiveTab(id)
+    navigate(`/exchange/${id === 'rates' ? 'rates' : id}`)
+  }
 
   const toggleLine = (code: string) => {
     setActiveLines(prev =>
@@ -85,12 +118,30 @@ export default function Exchange() {
             <IconRefresh size={15} />
             بروزرسانی
           </button>
-          <button className="flex items-center gap-2 text-sm bg-[#2563EB] text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors font-medium">
-            <IconPlus size={15} />
-            افزودن ارز جدید
-          </button>
+          {hasPermission('viewManagement') && (
+            <button className="flex items-center gap-2 text-sm bg-[#2563EB] text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors font-medium">
+              <IconPlus size={15} />
+              افزودن ارز جدید
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Tabs */}
+      <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1 w-fit">
+        {TABS.map(t => (
+          <button
+            key={t.id}
+            onClick={() => selectTab(t.id)}
+            className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors ${activeTab === t.id ? 'bg-[#2563EB] text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'rates' && (
+      <>
 
       {/* Currency cards */}
       <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
@@ -322,43 +373,179 @@ export default function Exchange() {
             </div>
           </div>
 
-          {/* Quick actions */}
-          <div className="bg-[#1E3A8A] rounded-xl p-4 text-white">
-            <h3 className="text-sm font-semibold mb-3 text-blue-100">مدیریت اسعار</h3>
-            <div className="space-y-2">
-              {[
-                { label: 'افزودن ارز جدید',      bg: '#2563EB' },
-                { label: 'ویرایش ارزها',          bg: 'rgba(255,255,255,0.1)' },
-                { label: 'دسته‌بندی ارزها',       bg: 'rgba(255,255,255,0.1)' },
-                { label: 'تنظیمات ارز',           bg: 'rgba(255,255,255,0.1)' },
-              ].map(a => (
-                <button key={a.label} className="w-full text-right px-3 py-2 rounded-lg text-xs font-medium text-blue-100 hover:text-white transition-colors" style={{ background: a.bg }}>
-                  {a.label}
-                </button>
-              ))}
+          {/* Quick access to currency management */}
+          {hasPermission('viewManagement') && (
+            <div className="bg-[#1E3A8A] rounded-xl p-4 text-white">
+              <h3 className="text-sm font-semibold mb-3 text-blue-100">مدیریت اسعار</h3>
+              <button
+                onClick={() => selectTab('manage')}
+                className="w-full text-right px-3 py-2.5 rounded-lg text-xs font-medium bg-[#2563EB] text-white hover:bg-blue-700 transition-colors"
+              >
+                رفتن به بخش مدیریت اسعار
+              </button>
             </div>
-          </div>
+          )}
 
-          {/* Tiadala section */}
+          {/* Link to the currency-exchange transaction form */}
           <div className="bg-white border border-slate-200 rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-slate-800 mb-3">تیادله اسعار</h3>
-            <div className="space-y-2">
-              {[
-                { label: 'انجام تبادله جدید',    color: '#2563EB' },
-                { label: 'لیست تبادلات',          color: '#7C3AED' },
-                { label: 'نرخ تبادله',            color: '#059669' },
-                { label: 'تاریخچه تبادلات',       color: '#D97706' },
-              ].map(a => (
-                <button key={a.label} className="w-full flex items-center justify-between px-3 py-2 rounded-xl border border-slate-100 hover:border-slate-200 transition-colors text-right">
-                  <span className="text-[11px] font-medium" style={{ color: a.color }}>←</span>
-                  <span className="text-xs text-slate-600">{a.label}</span>
-                </button>
-              ))}
-            </div>
+            <h3 className="text-sm font-semibold text-slate-800 mb-3">تبادل اسعار</h3>
+            <p className="text-[11px] text-slate-400 mb-3">ثبت سند خرید/فروش ارز با مشتری از بخش تراکنش‌ها انجام می‌شود.</p>
+            <button
+              onClick={() => navigate('/transactions/currency-exchange')}
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-colors text-right"
+            >
+              <span className="text-[11px] font-medium text-[#2563EB]">←</span>
+              <span className="text-xs text-slate-700 font-medium">ثبت سند تبادل اسعار جدید</span>
+            </button>
           </div>
 
         </div>
       </div>
+      </>
+      )}
+
+      {activeTab === 'daily' && (
+        <div className="space-y-5">
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+              <span className="text-xs text-slate-400">آخرین بروزرسانی: امروز، ۱۱:۳۰</span>
+              <h3 className="text-sm font-semibold text-slate-800">نرخ‌های روزانه</h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    {['ارز', 'نرخ صبح', 'نرخ ظهر', 'نرخ فعلی', 'روند امروز', 'تنظیم‌شده توسط'].map(h => (
+                      <th key={h} className="text-right text-slate-500 font-medium px-4 py-3 whitespace-nowrap">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {dailyRateSnapshots.map((r, i) => {
+                    const trendUp = r.current >= r.morning
+                    return (
+                      <tr key={r.code} className={`border-b border-slate-50 hover:bg-blue-50/30 transition-colors ${i % 2 === 0 ? '' : 'bg-slate-50/40'}`}>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{r.flag}</span>
+                            <span className="font-bold text-slate-800 ltr">{r.code}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-slate-500 ltr">{r.morning.toLocaleString()}</td>
+                        <td className="px-4 py-3 text-slate-500 ltr">{r.noon.toLocaleString()}</td>
+                        <td className="px-4 py-3 font-bold text-slate-800 ltr">{r.current.toLocaleString()}</td>
+                        <td className="px-4 py-3">
+                          <span className={`flex items-center gap-0.5 w-fit text-[11px] font-medium px-2 py-1 rounded-lg ${trendUp ? 'text-emerald-600 bg-emerald-50' : 'text-red-500 bg-red-50'}`}>
+                            {trendUp ? <IconArrowUpRight size={12} /> : <IconArrowDownRight size={12} />}
+                            {trendUp ? 'صعودی' : 'نزولی'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{r.setBy}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'history' && (
+        <div className="space-y-5">
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+              <IconHistory size={16} className="text-slate-400" />
+              <h3 className="text-sm font-semibold text-slate-800">تاریخچه تغییرات نرخ</h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    {['تاریخ و زمان', 'ارز', 'نرخ قبلی', 'نرخ جدید', 'درصد تغییر', 'تغییر توسط'].map(h => (
+                      <th key={h} className="text-right text-slate-500 font-medium px-4 py-3 whitespace-nowrap">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rateHistory.map((h, i) => (
+                    <tr key={h.id} className={`border-b border-slate-50 hover:bg-blue-50/30 transition-colors ${i % 2 === 0 ? '' : 'bg-slate-50/40'}`}>
+                      <td className="px-4 py-3 text-slate-500 ltr whitespace-nowrap">{h.date}</td>
+                      <td className="px-4 py-3 font-semibold text-slate-700 ltr">{h.currency}</td>
+                      <td className="px-4 py-3 text-slate-500 ltr">{h.oldRate.toLocaleString()}</td>
+                      <td className="px-4 py-3 font-bold text-slate-800 ltr">{h.newRate.toLocaleString()}</td>
+                      <td className="px-4 py-3">
+                        <span className={`text-[11px] font-medium px-2 py-1 rounded-lg ${h.positive ? 'text-emerald-600 bg-emerald-50' : 'text-red-500 bg-red-50'}`}>
+                          {h.changePercent}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{h.changedBy}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'manage' && (
+        hasPermission('viewManagement') ? (
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+              <IconClipboardList size={16} className="text-slate-400" />
+              <h3 className="text-sm font-semibold text-slate-800">مدیریت ارزهای فعال</h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    {['ارز', 'نام', 'خرید', 'فروش', 'وضعیت', 'عملیات'].map(h => (
+                      <th key={h} className="text-right text-slate-500 font-medium px-4 py-3 whitespace-nowrap">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {currencies.map((c, i) => (
+                    <tr key={c.code} className={`border-b border-slate-50 hover:bg-blue-50/30 transition-colors ${i % 2 === 0 ? '' : 'bg-slate-50/40'}`}>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{c.flag}</span>
+                          <span className="font-bold text-slate-800 ltr">{c.code}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">{c.name}</td>
+                      <td className="px-4 py-3 font-semibold text-[#2563EB] ltr">{c.buy.toLocaleString()}</td>
+                      <td className="px-4 py-3 font-semibold text-slate-700 ltr">{c.sell.toLocaleString()}</td>
+                      <td className="px-4 py-3">
+                        <span className={`text-[11px] font-medium px-2 py-1 rounded-lg ${c.status ? 'text-emerald-600 bg-emerald-50' : 'text-slate-400 bg-slate-100'}`}>
+                          {c.status ? 'فعال' : 'غیرفعال'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1">
+                          <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><IconEdit size={13} /></button>
+                          <button className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                            {c.status ? <IconCircleCheck size={13} className="text-emerald-500" /> : <IconCircleX size={13} className="text-slate-400" />}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white border border-slate-200 rounded-xl p-10 flex flex-col items-center justify-center text-center">
+            <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center mb-3">
+              <IconLock size={20} className="text-slate-400" />
+            </div>
+            <p className="text-sm font-semibold text-slate-600">دسترسی محدود</p>
+            <p className="text-xs text-slate-400 mt-1">مدیریت اسعار فقط برای مدیر سیستم قابل دسترسی است.</p>
+          </div>
+        )
+      )}
     </div>
   )
 }

@@ -34,3 +34,23 @@ export const currencyStats = {
   active: 4,
   inactive: 0,
 }
+
+export const dailyRateSnapshots = [
+  { code: 'USD', flag: '🇺🇸', morning: 71450, noon: 71550, current: 71600, setBy: 'احمد محمدی' },
+  { code: 'EUR', flag: '🇪🇺', morning: 76900, noon: 77000, current: 77100, setBy: 'احمد محمدی' },
+  { code: 'AED', flag: '🇦🇪', morning: 19420, noon: 19460, current: 19500, setBy: 'سارا کریمی' },
+  { code: 'TRY', flag: '🇹🇷', morning: 2125,  noon: 2118,  current: 2110,  setBy: 'احمد محمدی' },
+  { code: 'GBP', flag: '🇬🇧', morning: 90050, noon: 90150, current: 90200, setBy: 'احمد محمدی' },
+  { code: 'SAR', flag: '🇸🇦', morning: 18860, noon: 18875, current: 18890, setBy: 'سارا کریمی' },
+  { code: 'INR', flag: '🇮🇳', morning: 855,   noon: 852,   current: 850,   setBy: 'احمد محمدی' },
+  { code: 'CNY', flag: '🇨🇳', morning: 9730,  noon: 9740,  current: 9750,  setBy: 'احمد محمدی' },
+]
+
+export const rateHistory = [
+  { id: 1, date: '۱۴۰۳/۰۲/۲۴ - ۱۱:۳۰', currency: 'USD', oldRate: 71500, newRate: 71600, changePercent: '+0.14%', positive: true,  changedBy: 'احمد محمدی' },
+  { id: 2, date: '۱۴۰۳/۰۲/۲۴ - ۱۰:۱۵', currency: 'TRY', oldRate: 2118,  newRate: 2110,  changePercent: '-0.38%', positive: false, changedBy: 'احمد محمدی' },
+  { id: 3, date: '۱۴۰۳/۰۲/۲۴ - ۰۹:۰۰', currency: 'AED', oldRate: 19460, newRate: 19500, changePercent: '+0.21%', positive: true,  changedBy: 'سارا کریمی' },
+  { id: 4, date: '۱۴۰۳/۰۲/۲۳ - ۱۶:۴۵', currency: 'EUR', oldRate: 77000, newRate: 77100, changePercent: '+0.13%', positive: true,  changedBy: 'احمد محمدی' },
+  { id: 5, date: '۱۴۰۳/۰۲/۲۳ - ۱۴:۲۰', currency: 'GBP', oldRate: 90000, newRate: 90200, changePercent: '+0.22%', positive: true,  changedBy: 'احمد محمدی' },
+  { id: 6, date: '۱۴۰۳/۰۲/۲۳ - ۱۱:۱۰', currency: 'INR', oldRate: 858,   newRate: 850,   changePercent: '-0.93%', positive: false, changedBy: 'سارا کریمی' },
+]

@@ -32,6 +32,7 @@ export const MENU_ITEMS: MenuItem[] = [
     path: '/transactions',
     children: [
       { id: 'income-expense',     label: 'عواید و مصارف',        path: '/transactions/income-expense' },
+      { id: 'currency-exchange',  label: 'تبادل اسعار',           path: '/transactions/currency-exchange' },
       { id: 'cash-bank',          label: 'نقد و بانک',            path: '/transactions/cash-bank' },
       { id: 'misc',               label: 'متفرقه نقد و بانک',    path: '/transactions/misc' },
       { id: 'account-transfer',   label: 'انتقال حساب به حساب',  path: '/transactions/account-transfer' },
@@ -56,12 +57,6 @@ export const MENU_ITEMS: MenuItem[] = [
     label: 'اسعار',
     icon: 'IconCurrencyDollar',
     path: '/exchange',
-    children: [
-      { id: 'rate-list',    label: 'لیست اسعار',       path: '/exchange/rates' },
-      { id: 'daily-rates',  label: 'نرخ‌های روزانه',   path: '/exchange/daily' },
-      { id: 'rate-history', label: 'تاریخچه تغییرات',  path: '/exchange/history' },
-      { id: 'rate-manage',  label: 'مدیریت اسعار',     path: '/exchange/manage' },
-    ],
   },
   {
     id: 'settings',

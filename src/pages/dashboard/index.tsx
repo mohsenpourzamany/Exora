@@ -12,9 +12,17 @@ import {
   statsData, chartData, currencyData, transactionsData,
   quickStats, systemStatus, liveRates,
 } from './mockData'
+import { useAuth, type Permission } from '../../context/AuthContext'
 
 const STAT_ICONS: Record<string, React.ElementType> = {
   IconWallet, IconArrowsExchange, IconTrendingUp, IconUsers,
+}
+
+// Sensitive stat cards require a specific permission to view.
+// Cards not listed here (e.g. transaction/customer counts) are visible to everyone.
+const STAT_PERMISSIONS: Record<string, Permission> = {
+  total: 'viewSensitiveStats',
+  profit: 'viewNetProfit',
 }
 
 // Custom Tooltip for charts
@@ -37,6 +45,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 export default function Dashboard() {
+  const { hasPermission } = useAuth()
+
+  const visibleStats = statsData.filter(stat => {
+    const required = STAT_PERMISSIONS[stat.id]
+    return !required || hasPermission(required)
+  })
+
   return (
     <div className="space-y-5">
 
@@ -89,7 +104,7 @@ export default function Dashboard() {
 
           {/* Stats cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {statsData.map(stat => {
+            {visibleStats.map(stat => {
               const Icon = STAT_ICONS[stat.icon]
               return (
                 <div key={stat.id} className="bg-white border border-slate-200 rounded-xl p-4 hover:shadow-md transition-shadow">
@@ -280,53 +295,67 @@ export default function Dashboard() {
           </div>
 
           {/* Quick stats today */}
-          <div className="bg-[#1E3A8A] rounded-xl p-4 text-white">
-            <h3 className="text-sm font-semibold mb-3 text-blue-100">خلاصه عملکرد امروز</h3>
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-blue-200 text-xs font-semibold ltr">
-                  {quickStats.received.toLocaleString()} $
-                </span>
-                <span className="text-blue-300 text-xs">دریافت</span>
-              </div>
-              <div className="w-full bg-white/10 rounded-full h-1">
-                <div className="bg-emerald-400 h-1 rounded-full" style={{ width: '65%' }} />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-blue-200 text-xs font-semibold ltr">
-                  {quickStats.paid.toLocaleString()} $
-                </span>
-                <span className="text-blue-300 text-xs">پرداخت</span>
-              </div>
-              <div className="w-full bg-white/10 rounded-full h-1">
-                <div className="bg-red-400 h-1 rounded-full" style={{ width: '40%' }} />
-              </div>
-              <div className="pt-1 border-t border-white/10 flex items-center justify-between">
-                <span className="text-emerald-300 text-sm font-bold ltr">
-                  {quickStats.profit.toLocaleString()} $
-                </span>
-                <span className="text-blue-300 text-xs">سود خالص</span>
+          {(hasPermission('viewTotalIncome') || hasPermission('viewTotalExpense') || hasPermission('viewNetProfit')) && (
+            <div className="bg-[#1E3A8A] rounded-xl p-4 text-white">
+              <h3 className="text-sm font-semibold mb-3 text-blue-100">خلاصه عملکرد امروز</h3>
+              <div className="space-y-2.5">
+                {hasPermission('viewTotalIncome') && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-blue-200 text-xs font-semibold ltr">
+                        {quickStats.received.toLocaleString()} $
+                      </span>
+                      <span className="text-blue-300 text-xs">دریافت</span>
+                    </div>
+                    <div className="w-full bg-white/10 rounded-full h-1">
+                      <div className="bg-emerald-400 h-1 rounded-full" style={{ width: '65%' }} />
+                    </div>
+                  </>
+                )}
+                {hasPermission('viewTotalExpense') && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-blue-200 text-xs font-semibold ltr">
+                        {quickStats.paid.toLocaleString()} $
+                      </span>
+                      <span className="text-blue-300 text-xs">پرداخت</span>
+                    </div>
+                    <div className="w-full bg-white/10 rounded-full h-1">
+                      <div className="bg-red-400 h-1 rounded-full" style={{ width: '40%' }} />
+                    </div>
+                  </>
+                )}
+                {hasPermission('viewNetProfit') && (
+                  <div className="pt-1 border-t border-white/10 flex items-center justify-between">
+                    <span className="text-emerald-300 text-sm font-bold ltr">
+                      {quickStats.profit.toLocaleString()} $
+                    </span>
+                    <span className="text-blue-300 text-xs">سود خالص</span>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          )}
 
           {/* Currency balances */}
-          <div className="bg-white border border-slate-200 rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-slate-800 mb-3">موجودی صندوق</h3>
-            <div className="space-y-2">
-              {currencyData.slice(0, 5).map(c => (
-                <div key={c.name} className="flex items-center justify-between py-1.5 border-b border-slate-50 last:border-0">
-                  <span className="text-xs font-bold ltr" style={{ color: c.color }}>
-                    {c.value.toLocaleString()}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-slate-600">{c.label}</span>
-                    <span className="text-sm">{c.flag}</span>
+          {hasPermission('viewSensitiveStats') && (
+            <div className="bg-white border border-slate-200 rounded-xl p-4">
+              <h3 className="text-sm font-semibold text-slate-800 mb-3">موجودی صندوق</h3>
+              <div className="space-y-2">
+                {currencyData.slice(0, 5).map(c => (
+                  <div key={c.name} className="flex items-center justify-between py-1.5 border-b border-slate-50 last:border-0">
+                    <span className="text-xs font-bold ltr" style={{ color: c.color }}>
+                      {c.value.toLocaleString()}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-slate-600">{c.label}</span>
+                      <span className="text-sm">{c.flag}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* System status */}
           <div className="bg-white border border-slate-200 rounded-xl p-4">
